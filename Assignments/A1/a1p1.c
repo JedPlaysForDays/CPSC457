@@ -1,36 +1,41 @@
+/*  CPSC 457 Assignment 1 Part 1
+    Author: Jed Cravalho 30212116
+*/
+
+/* Includes */
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
+#include <stdlib.h>
 int main() {
 
-    pid_t fr;
-    int toParent;
-    int toChild;
+    pid_t fr;           // store child pid
+    char line[1000];    // allocates memory for 1 line from treasure map
+    char filename[100]; // allocates memory for name of file
 
-    char filename[100];
     printf("Enter the file to scan:\n");
-    fgets(filename, sizeof(filename), stdin);
+    scanf("%s", filename);
 
-    // Open file
+    /* Open File */
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        printf("An error occured while reading the file\n");
+        printf("There is an error with the file. Ending program.\n");
+        exit(0);
     }
-
 
     for (int i = 0; i < 100; i++) {
         fr = fork();
         if (fr < 0) {
-            fprintf(stderr, "error\n");
+            fprintf(stderr, "Fork Failed!\n");
+            exit(-1);
         } else if (fr == 0) {
-            printf("I am child %d!\n", i);
-
+            for (int j = 0; j <= 1000; j++) {
+            }
         } else {
             printf("Child %d (PID %d): Searching row %d\n", i, fr, i);
+            
         }
     }
-
 
     return 0;
 }
