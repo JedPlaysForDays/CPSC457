@@ -8,25 +8,40 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <string.h>
-int main() {
+int main(int argc, char *argv[]) {
 
     pid_t fr;               // store child pid
     char line[1999];        // allocates memory for 1 line from treasure map
     char filename[100];     // allocates memory for name of file
     int noTreasure = 9999;  // return 9999 if no treasure is found
-    int currentLine = 0;
     int foundTreasure;
     int finishedSearching;
-    printf("Enter the file to scan:\n");
-    scanf("%s", filename);
+    int rows = 100;
+    int cols = 1000;
 
-    /* Open File */
+    /* Error checking for valid number of arguments */
+    if (argc == 3 && argv[1] == "<") {
+        *filename = argv[2]; // use 2nd argument for filename
+    } else {
+        printf("Please use the following format: ./a1p1 < *text_file*\n");
+        exit(1); // exit if format is wrong 
+    }
+    
+    /* Open File and convert to 2D Array */
+    int matrix[rows][cols];
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         printf("There is an error with the file. Ending program.\n");
         exit(1);
         fclose(file);
     } else {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                fscanf(file, "%d", &matrix[i][j]);
+            }
+        }
+        fclose(file);
+
         /* Fork Chain */
         for (int i = 0; i < 100; i++) {
             fr = fork();
@@ -53,7 +68,8 @@ int main() {
                 exit(getpid());
             } else {
                 int childPid = wait(&foundTreasure);
-                printf("Parent: the treasure was found by child with PID %d at row %d and column %d", childPid, i, WEXITSTATUS(foundTreasure));
+                printf("Parent: the treasure was found by child with PID %d at row %d and column %d\n", childPid, i, WEXITSTATUS(foundTreasure));
+                exit(0);
             }
         }
         fclose(file);
