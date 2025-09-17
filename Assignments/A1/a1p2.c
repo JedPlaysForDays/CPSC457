@@ -4,7 +4,10 @@
 
 /* Includes */
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <unistd.h>
+#include <sys/shm.h>
 
 /* Primality function */
 int is_prime(int num) {
@@ -17,10 +20,35 @@ int is_prime(int num) {
 
 int main(int argc, char *argv[]) {
 
+    /* Variables */
+    pid_t fr;
+    int LOWER_BOUND;
+    int UPPER_BOUND;
+    int N;
+    int totalRange;
+
+    /* Get bounds and number of children */
+    if (argc == 4) {
+        LOWER_BOUND = argv[1];
+        UPPER_BOUND = argv[2];
+        N = argv[3];
+        totalRange = UPPER_BOUND - LOWER_BOUND;
+
+    } else {
+        printf("There must be 3 arguments in the format shown: ./a1p2 [UPPER_BOUND] [LOWER_BOUND] [NUM_PROCESSES]\n");
+    }
+
+
     /* Create shared memory layout */
+    int shmid = shmget(IPC_PRIVATE, totalRange * sizeof(int), IPC_CREAT | 0666);
+    int *shm_ptr = (int *) shmat(shmid, NULL, 0);
 
     /* Parent Process */
-    // allocate shared memory
+    // allocate shared memory using shm___
+
+    /* Proposed Memory Allocation */
+    // shared array index
+
     // spawn children
 
     /* Child Process */
