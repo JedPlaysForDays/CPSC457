@@ -15,25 +15,23 @@ int main(int argc, char *argv[]) {
     pid_t fr;               // store child pid
     int noTreasure = 9999;  // return 9999 if no treasure is found
     int rowOfTreasure;      // store the row of the winning treasure
-    int winnerPID;
-    int fromChild;
-    int rows = 100;
-    int cols = 1000;
-    int matrix[rows][cols];
+    int winnerPID;          // store winning child's PID   
+    int rows = 100;         // set number of rows to 100 (since it's a 100x1000 matrix)
+    int cols = 1000;        // set number of rows to 1000
+    int matrix[rows][cols]; // create a matrix of 100x1000
 
     /* Error checking for valid number of arguments */
     if (argc == 3 && strcmp(argv[1], "<") == 0) {
         /* Open File and convert to 2D Array */
         char *filename = argv[2]; // use 2nd argument for filename
         FILE *file = fopen(filename, "r"); 
-        if (file == NULL) {
+        if (file == NULL) { // If there's an error with the file, print error message and end program
             printf("There is an error with the file. Ending program.\n");
             exit(1);
             fclose(file);
         } else {
 
             /* Fill Matrix from test file*/
-
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
                     fscanf(file, "%d", &matrix[i][j]);
@@ -51,15 +49,14 @@ int main(int argc, char *argv[]) {
                 } else if (fr == 0) { 
 
                     /* Child Process */
-
                     printf("Child %d (PID %d): Searching row %d\n", i, getpid(), i);
                     for (int j = 0; j < cols; j++) {
-                        /* Insert Code to Find Treasure */
+                        /* Find Treasure */
                         if (matrix[i][j] == 1) {
                             exit(i+1); // +1 to avoid issues if treasure in row 0
                         }
                     }
-                    exit(0);
+                    exit(0); // exit 0 if no treasure was found in row
                 }
             }
             
@@ -68,8 +65,8 @@ int main(int argc, char *argv[]) {
                 int status;
                 int childPID = wait(&status);
                 if (WIFEXITED(status) && WEXITSTATUS(status) > 0) { // if child process exits and succeeds finding the treasure
-                    rowOfTreasure = WEXITSTATUS(status) - 1; // -1 to fix offset from exit code
-                    winnerPID = childPID;
+                    rowOfTreasure = WEXITSTATUS(status) - 1; // -1 to fix offset from exit code, save winning row
+                    winnerPID = childPID; // save winning child PID
                 }
             }                        
             for (int j = 0; j < 1000; j++) { // Find column of treasure given winning row
@@ -82,8 +79,8 @@ int main(int argc, char *argv[]) {
             exit(0);
         }
     } else {
-        /* Error checking for incorrect input */
 
+        /* Error checking for incorrect input */
         printf("Please use the following format: ./a1p1 < [text_file]\n");
         printf("%d\n", argc);
         for (int i = 0; i < argc; i++) {
