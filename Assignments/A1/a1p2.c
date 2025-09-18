@@ -8,6 +8,7 @@
 #include <sys/ipc.h>
 #include <unistd.h>
 #include <sys/shm.h>
+#include <math.h>
 
 /* Primality function */
 int is_prime(int num) {
@@ -29,20 +30,21 @@ int main(int argc, char *argv[]) {
     int MAX_PRIMES_PER_CHILD;
 
     /* Get bounds and number of children */
-    if (argc == 4) {
-        LOWER_BOUND = argv[1];
-        UPPER_BOUND = argv[2];
-        N = argv[3];
-        totalRange = UPPER_BOUND - LOWER_BOUND + 1; //+1 to correct 0-based 
-
-    } else {
+    if (argc != 4) {
         printf("There must be 3 arguments in the format shown: ./a1p2 [UPPER_BOUND] [LOWER_BOUND] [NUM_PROCESSES]\n");
+        exit(0);
+    } else if (argv[3] <= 0) {
+        printf("The number of processes must be greater than 0.\n");
+        exit(0);
+    } else if (argv[2]-argv[1] <= 0) {
+        printf("The difference between the bounds must be greater than 0\n");
+        exit(0);
+    } else {
+        LOWER_BOUND = atoi(argv[1]);
+        UPPER_BOUND = atoi(argv[2]);
+        N = atoi(argv[3]);
+        totalRange = UPPER_BOUND - LOWER_BOUND + 1; //+1 to correct 0-based numbering
     }
-
-
-    /* Create shared memory layout */
-    int shmid = shmget(IPC_PRIVATE, totalRange * sizeof(int), IPC_CREAT | 0666); //shmid is the identifier of shared memory block
-    int *shm_ptr = (int *) shmat(shmid, NULL, 0); //shm_ptr behaves like array of ints but shared
 
     /* Parent Process */
     // allocate shared memory using shm___
@@ -50,20 +52,46 @@ int main(int argc, char *argv[]) {
         N = totalRange;
     }
 
-    // do ceiling function
+    // do ceiling function for max primes per child. This ensures that there is equal coverage for each process for the entire range of numbers.
+    MAX_PRIMES_PER_CHILD = (totalRange + N - 1) / N;
 
-    /* Proposed Memory Allocation */
-    // shared array index
-    // set memory to zero
-    // first "block" reserved for index counter (num primes)
+    /* Create shared memory layout */
+    int shmid = shmget(IPC_PRIVATE, N * MAX_PRIMES_PER_CHILD * sizeof(int) + 1, IPC_CREAT | 0666); 
+    //shmid is the identifier of shared memory block
+    // +1 makes room for the index counter in case range is perfectly divisible by N
+    // first "block" (i.e. shm_ptr[0]) reserved for index counter (num primes)
+    int *shm_ptr = (int *) shmat(shmid, NULL, 0); //pointer to shared memory 
 
+    for (int i = 0; i < N; i++) {
+        fr = fork();
+        if (fr < 0) {
+            fprintf(stderr, "There was an error with child PID: %d. Shutting down.", getpid());
+            exit(-1);
+        } else if (fr == 0) {
+        /* Child Process */
+        // Computes a non-overlapping subrange of the total range.
+        int index = shm_ptr[0]++;
+        int low = LOWER_BOUND + index * MAX_PRIMES_PER_CHILD;
+        int high = low + MAX_PRIMES_PER_CHILD - 1;
+        if (high > UPPER_BOUND) {
+            high = UPPER_BOUND;
+        }
+        printf("Child (PID: %d) Checking range [%d, %d]\n", getpid(), low, high);
+        // for (int j = low; j < high; j++) {
+        
+        // }
+        // Finds prime numbers in that subrange.
+        // Stores them in the shared memory in a thread-safe manner (e.g., using an offset scheme).
+        // Exits.
+        exit(0);
+        } else {
+            
+        }
+    }
     // spawn children
     // each child only writes to the next following index
-    /* Child Process */
-    // Computes a non-overlapping subrange of the total range.
-    // Finds prime numbers in that subrange.
-    // Stores them in the shared memory in a thread-safe manner (e.g., using an offset scheme).
-    // Exits.
+
+
 
 
     /* Parent process again */
