@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
         LOWER_BOUND = atoi(argv[1]);
         UPPER_BOUND = atoi(argv[2]);
         N = atoi(argv[3]);
-        totalRange = UPPER_BOUND - LOWER_BOUND + 1; //+1 to correct 0-based numbering
+        totalRange = UPPER_BOUND - LOWER_BOUND + 1; //+1 to count the starting number
     }
 
     /* Parent Process */
@@ -51,8 +51,9 @@ int main(int argc, char *argv[]) {
     if (N > totalRange) { // Sets the highest number of children to the total range (can't have bigger range than children)
         N = totalRange;
     }
-    // do ceiling function for max primes per child. This ensures that there is equal coverage for each process for the entire range of numbers.
-    MAX_PRIMES_PER_CHILD = (totalRange + N - 1) / N;
+    // do floor function for max primes per child. This ensures that there is equal coverage for each process for the entire range of numbers.
+    // Note: The last child will carry the remainder
+    MAX_PRIMES_PER_CHILD = totalRange / N;
 
     /* Create shared memory layout */
     int shmid = shmget(IPC_PRIVATE, N * MAX_PRIMES_PER_CHILD * sizeof(int) + 1, IPC_CREAT | 0666); 
@@ -70,33 +71,19 @@ int main(int argc, char *argv[]) {
         } else if (fr == 0) {
             /* Child Process */
             // Computes a non-overlapping subrange of the total range.
-
-            int base = 1 + i * MAX_PRIMES_PER_CHILD;
-            int count = 0;
-
             int low = LOWER_BOUND + i * MAX_PRIMES_PER_CHILD;
             int high = LOWER_BOUND + (i + 1) * MAX_PRIMES_PER_CHILD - 1;
-            if (high > UPPER_BOUND) {
+            if (high > UPPER_BOUND || i == N - 1) {
                 high = UPPER_BOUND;
-            }
-
+            } 
+            printf("PPC: %d\n", MAX_PRIMES_PER_CHILD);
             printf("Child PID %d checking range [%d, %d]\n", getpid(), low, high);
-            
-            for (int n = LOWER_BOUND; n <= UPPER_BOUND; n++) {
-                if (is_prime(n)) {
-                    shm_ptr[base + count] = n;
-                    count++;
-                }
-            }
-            shm_ptr[base + count] = -1; // sentinel to mark end
-
+        
             // Finds prime numbers in that subrange.
             // Stores them in the shared memory in a thread-safe manner (e.g., using an offset scheme).
             // Exits.
             _exit(0);
-        } else {
-            
-        }
+        } 
     }
     // spawn children
     // each child only writes to the next following index
@@ -105,7 +92,15 @@ int main(int argc, char *argv[]) {
 
 
     /* Parent process again */
-
+    int status;
+    for (int i = 0; i < N; i++) {
+        wait(&status);
+        if (WIFEXITED(status)) {
+            
+        } else {
+            fprintf(stderr, "A child exited with an error.\n");
+        }
+    }
     // wait for all children
     // read shared memory
     // print out all primes (hopefully in order?)
