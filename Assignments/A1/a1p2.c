@@ -89,13 +89,11 @@ int main(int argc, char *argv[]) {
                 }
             }
             shm_ptr[base + count] = -1; // sentinel to mark end
-            // for (int j = low; j < high; j++) {
-            
-            // }
+
             // Finds prime numbers in that subrange.
             // Stores them in the shared memory in a thread-safe manner (e.g., using an offset scheme).
             // Exits.
-            exit(0);
+            _exit(0);
         } else {
             
         }
