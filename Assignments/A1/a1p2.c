@@ -26,13 +26,14 @@ int main(int argc, char *argv[]) {
     int UPPER_BOUND;
     int N;
     int totalRange;
+    int MAX_PRIMES_PER_CHILD;
 
     /* Get bounds and number of children */
     if (argc == 4) {
         LOWER_BOUND = argv[1];
         UPPER_BOUND = argv[2];
         N = argv[3];
-        totalRange = UPPER_BOUND - LOWER_BOUND;
+        totalRange = UPPER_BOUND - LOWER_BOUND + 1; //+1 to correct 0-based 
 
     } else {
         printf("There must be 3 arguments in the format shown: ./a1p2 [UPPER_BOUND] [LOWER_BOUND] [NUM_PROCESSES]\n");
@@ -40,17 +41,24 @@ int main(int argc, char *argv[]) {
 
 
     /* Create shared memory layout */
-    int shmid = shmget(IPC_PRIVATE, totalRange * sizeof(int), IPC_CREAT | 0666);
-    int *shm_ptr = (int *) shmat(shmid, NULL, 0);
+    int shmid = shmget(IPC_PRIVATE, totalRange * sizeof(int), IPC_CREAT | 0666); //shmid is the identifier of shared memory block
+    int *shm_ptr = (int *) shmat(shmid, NULL, 0); //shm_ptr behaves like array of ints but shared
 
     /* Parent Process */
     // allocate shared memory using shm___
+    if (N > totalRange) { // Sets the highest number of children to the total range (can't have bigger range than children)
+        N = totalRange;
+    }
+
+    // do ceiling function
 
     /* Proposed Memory Allocation */
     // shared array index
+    // set memory to zero
+    // first "block" reserved for index counter (num primes)
 
     // spawn children
-
+    // each child only writes to the next following index
     /* Child Process */
     // Computes a non-overlapping subrange of the total range.
     // Finds prime numbers in that subrange.
