@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (counter == N) { // If all children return success, print primes.
-        printf("All children finished. Primes found:\n");
+        printf("\nAll children finished. Primes found:\n");
 
         // The for loop runs through all array indexes looking for primes and prints each one.
         for (int i = 0; i < totalRange; i++) {
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-
+    printf("\n");
     // free up shared memory
     shmdt(shm_ptr);
     shmctl(shmid, IPC_RMID, NULL);
