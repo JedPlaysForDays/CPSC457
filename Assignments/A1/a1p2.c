@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/shm.h>
 #include <math.h>
+#include <sys/wait.h>
 
 /* Primality function given from Assignment */
 int is_prime(int num) {

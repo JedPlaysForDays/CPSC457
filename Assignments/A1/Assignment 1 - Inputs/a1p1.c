@@ -13,7 +13,6 @@
 int main(int argc, char *argv[]) {
 
     pid_t fr;               // store child pid
-    int noTreasure = 9999;  // return 9999 if no treasure is found
     int rowOfTreasure;      // store the row of the winning treasure
     int winnerPID;          // store winning child's PID   
     int rows = 100;         // set number of rows to 100 (since it's a 100x1000 matrix)
